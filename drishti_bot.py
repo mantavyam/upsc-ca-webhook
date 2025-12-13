@@ -19,16 +19,20 @@ def send_discord_notification(title, link, category):
     
     # Clean up title (remove ellipsis, extra spaces)
     title = title.strip().replace("...", "")
-    
     # Color coding: Green for News, Purple for Editorials
-    color = 3066993 if category == "Daily Current Affairs" else 10181046
+    # color = 3066993 if category == "Daily Current Affairs" else 10181046
+    color = 3447003 if category == "Daily Current Affairs" else 15158332
     
     embed = {
-        "username": "Essentials",
-        "avatar_url": "https://i.imgur.com/4M34hi2.png",  # Optional: Add icon
+        "username": "IMA GC",
+        "avatar_url": "https://i.ibb.co/gFc42jQP/IMA-ACC-Pic-Capture-2-1.png",  # Optional: Add icon
         "embeds": [{
-            "title": f"🆕 New {category}",
-            "description": f"**{title}**",
+            "title": f"{title}",
+            "description": (
+                f"New update available in {category} section!\n"
+                f"Prepare yourself for the Written and SSB of the upcoming UPSC CDS Exam.\n\n"
+                f"[Click to Read full article]({link})"
+            ),
             "url": link,
             "color": color,
             "timestamp": datetime.utcnow().isoformat(),

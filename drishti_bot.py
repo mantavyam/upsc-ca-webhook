@@ -30,14 +30,13 @@ def send_discord_notification(title, link, category):
             "title": f"{title}",
             "description": (
                 f"New update available in {category} section!\n"
-                f"Prepare yourself for the Written and SSB of the upcoming UPSC CDS Exam.\n\n"
                 f"[Click to Read full article]({link})"
             ),
             "url": link,
             "color": color,
             "timestamp": datetime.utcnow().isoformat(),
             "footer": {
-                "text": "Exam Oriented • Daily Updates"
+                "text": "Exam Oriented • Daily Updates to Prepare thyself for the Written and SSB of the upcoming UPSC CDS Exam"
             }
         }]
     }

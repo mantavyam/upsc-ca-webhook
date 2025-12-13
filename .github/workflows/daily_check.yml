@@ -1,0 +1,53 @@
+name: Webpage Monitor
+
+on:
+  schedule:
+    # Run every 2 hours from 6 AM to 10 PM IST (0:30 to 16:30 UTC)
+    # This covers the typical update window
+    - cron: '30 4,6,8,10,12 * * *'
+  
+  workflow_dispatch:  # Allow manual runs for testing
+
+jobs:
+  check-updates:
+    runs-on: ubuntu-latest
+    
+    permissions:
+      contents: write  # Required to commit history.json
+    
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Full history for commits
+      
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+      
+      - name: Install Dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements.txt
+      
+      - name: Run Scraper
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+        run: |
+          python drishti_bot.py
+      
+      - name: Commit History Changes
+        run: |
+          git config --local user.name "DrishtiBot[bot]"
+          git config --local user.email "drishtibot@users.noreply.github.com"
+          
+          # Only commit if there are changes
+          if [ -n "$(git status --porcelain)" ]; then
+            git add history.json
+            git commit -m "Update notification history [skip ci]"
+            git push
+          else
+            echo "No changes to commit"
+          fi

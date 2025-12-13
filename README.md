@@ -1,13 +1,7 @@
 # upsc-ca-webhook
 A Python based webpage scraper which notifies a Discord Server Channel on updates via webhook.
 
-# Drishti IAS Discord Bot - Complete Analysis & Corrected Implementation
-
-## Executive Summary
-
-After thorough analysis of the provided HTML structure and the proposed solution, I've identified several **critical issues** that would prevent the bot from working correctly. Below is a comprehensive breakdown and the **corrected, production-ready code**.
-
----
+# UPSC CA Essentials Bot
 
 ## HTML Structure Analysis
 

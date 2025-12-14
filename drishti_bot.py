@@ -25,8 +25,8 @@ def send_discord_notification(title, link, category):
     color = 3447003 if category == "Daily Current Affairs" else 15158332
     
     embed = {
-        "username": "IMA GC",
-        "avatar_url": "https://i.ibb.co/gFc42jQP/IMA-ACC-Pic-Capture-2-1.png",  # Optional: Add icon
+        "username": "Drill Ustaad - IMA",
+        "avatar_url": "https://i.ibb.co/Q79mP6CC/ima-ustad.jpg",
         "embeds": [{
             "title": f"{title}",
             "description": (
@@ -181,13 +181,13 @@ def send_news_of_the_day_notification(date_title, articles, date_url):
     description += f"\n[View full page]({date_url})"
     
     embed = {
-        "username": "IMA GC",
-        "avatar_url": "https://i.ibb.co/gFc42jQP/IMA-ACC-Pic-Capture-2-1.png",
+        "username": "Drill Ustaad - IMA",
+        "avatar_url": "https://i.ibb.co/Q79mP6CC/ima-ustad.jpg",
         "embeds": [{
             "title": "News of the Day",
             "description": description,
             "url": date_url,
-            "color": 3066993,
+            "color": 3447003,
             "timestamp": datetime.utcnow().isoformat(),
             "footer": {
                 "text": "Exam Oriented • Daily Updates to Prepare thyself for the Written and SSB of the upcoming UPSC CDS Exam"

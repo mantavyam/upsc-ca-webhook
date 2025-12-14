@@ -19,7 +19,6 @@ def send_discord_notification(title, link, category):
     
     # Clean up title (remove ellipsis, extra spaces)
     title = title.strip().replace("...", "")
-    
     # Color coding: Green for News, Purple for Editorials
     # color = 3066993 if category == "Daily Current Affairs" else 10181046
     color = 3447003 if category == "Daily Current Affairs" else 15158332
@@ -56,22 +55,18 @@ def load_history():
     if os.path.exists(HISTORY_FILE):
         try:
             with open(HISTORY_FILE, "r", encoding="utf-8") as f:
-                data = json.load(f)
-                # Ensure news_articles key exists for backward compatibility
-                if "news_articles" not in data:
-                    data["news_articles"] = []
-                return data
+                return json.load(f)
         except Exception as e:
             print(f"Warning: Could not load history: {e}")
-            return {"news": [], "editorials": [], "news_articles": []}
-    return {"news": [], "editorials": [], "news_articles": []}
+            return {"news": [], "editorials": []}
+    return {"news": [], "editorials": []}
 
 def save_history(history):
     """Save notified URLs to history file."""
     try:
         with open(HISTORY_FILE, "w", encoding="utf-8") as f:
             json.dump(history, f, indent=2, ensure_ascii=False)
-        print(f"✓ History saved ({len(history['news'])} news, {len(history['editorials'])} editorials, {len(history.get('news_articles', []))} articles)")
+        print(f"✓ History saved ({len(history['news'])} news, {len(history['editorials'])} editorials)")
     except Exception as e:
         print(f"✗ Error saving history: {e}")
 
@@ -112,97 +107,6 @@ def parse_news_section(soup):
         print(f"✗ Error parsing news section: {e}")
     
     return links
-
-def fetch_news_of_the_day(date_url):
-    """Fetch 'News of the Day' articles from a specific date's page."""
-    articles = []
-    try:
-        headers = {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
-        }
-        
-        print(f"  ⟳ Fetching News of the Day from: {date_url}")
-        response = requests.get(date_url, headers=headers, timeout=15)
-        response.raise_for_status()
-        
-        soup = BeautifulSoup(response.text, 'html.parser')
-        
-        # Find the "News of the day" section
-        # Based on HTML: <div class="category news"> with <p class="subheading bg-yellow">News of the day</p>
-        news_category = soup.find("div", class_="category news")
-        
-        if not news_category:
-            print("  ⚠ News of the day section not found")
-            return articles
-        
-        # Get the <ul> containing the article links
-        ul = news_category.find("ul")
-        if not ul:
-            print("  ⚠ News articles <ul> not found")
-            return articles
-        
-        # Extract all article links
-        for li in ul.find_all("li"):
-            a_tag = li.find("a", href=True)
-            if a_tag:
-                # Extract the article title and full URL
-                title = a_tag.get_text(strip=True)
-                href = a_tag.get("href")
-                
-                # The href contains anchor links like #33225, need to build full URL
-                # Format: base_url + href (href already includes the date and anchor)
-                full_url = href if href.startswith("http") else f"https://www.drishtiias.com{href}"
-                
-                articles.append({
-                    "title": title,
-                    "url": full_url
-                })
-        
-        print(f"  ✓ Found {len(articles)} news articles")
-        
-    except Exception as e:
-        print(f"  ✗ Error fetching news of the day: {e}")
-    
-    return articles
-
-def send_news_of_the_day_notification(date_title, articles, date_url):
-    """Send a consolidated notification with all News of the Day articles."""
-    if not DISCORD_WEBHOOK or not articles:
-        return False
-    
-    # Build the description with all articles as a numbered list
-    description = f"**{len(articles)} articles published on {date_title}:**\n\n"
-    
-    for idx, article in enumerate(articles, 1):
-        # Create clickable links in Discord markdown format
-        description += f"{idx}. [{article['title']}]({article['url']})\n"
-    
-    # Add a footer link to the main date page
-    description += f"\n[View full page]({date_url})"
-    
-    embed = {
-        "username": "IMA GC",
-        "avatar_url": "https://i.ibb.co/gFc42jQP/IMA-ACC-Pic-Capture-2-1.png",
-        "embeds": [{
-            "title": "News of the Day",
-            "description": description,
-            "url": date_url,
-            "color": 3066993,
-            "timestamp": datetime.utcnow().isoformat(),
-            "footer": {
-                "text": "Exam Oriented • Daily Updates to Prepare thyself for the Written and SSB of the upcoming UPSC CDS Exam"
-            }
-        }]
-    }
-    
-    try:
-        response = requests.post(DISCORD_WEBHOOK, json=embed, timeout=10)
-        response.raise_for_status()
-        print(f"✓ Sent News of the Day notification ({len(articles)} articles)")
-        return True
-    except Exception as e:
-        print(f"✗ Failed to send News of the Day notification: {e}")
-        return False
 
 def parse_editorial_section(soup):
     """Parse Important Editorials section."""
@@ -279,8 +183,6 @@ def main():
     
     # Process news (most recent first, but notify oldest to newest)
     print("\n--- Processing News ---")
-    news_date_to_fetch = None  # Track if we need to fetch News of the Day
-    
     for link_data in reversed(news_links[:5]):  # Check top 5 most recent
         url = link_data["url"]
         title = link_data["title"]
@@ -290,13 +192,6 @@ def main():
                 history["news"].append(url)
                 history["news"] = history["news"][-MAX_HISTORY_SIZE:]
                 new_items_found = True
-                
-                # Mark that we need to fetch News of the Day for this date
-                if not news_date_to_fetch:
-                    news_date_to_fetch = {
-                        "url": url,
-                        "title": title
-                    }
         else:
             print(f"⊘ Already notified: {title[:50]}...")
     
@@ -313,27 +208,6 @@ def main():
                 new_items_found = True
         else:
             print(f"⊘ Already notified: {title[:50]}...")
-    
-    # NEW FEATURE: Fetch and send "News of the Day" articles if there's a new update
-    if news_date_to_fetch:
-        print("\n--- Fetching News of the Day ---")
-        date_url = news_date_to_fetch["url"]
-        date_title = news_date_to_fetch["title"]
-        
-        # Check if we've already sent news articles for this date
-        if date_url not in history.get("news_articles", []):
-            articles = fetch_news_of_the_day(date_url)
-            
-            if articles:
-                if send_news_of_the_day_notification(date_title, articles, date_url):
-                    # Add to history to prevent duplicate notifications
-                    if "news_articles" not in history:
-                        history["news_articles"] = []
-                    history["news_articles"].append(date_url)
-                    history["news_articles"] = history["news_articles"][-MAX_HISTORY_SIZE:]
-                    new_items_found = True
-        else:
-            print(f"⊘ Already sent News of the Day for: {date_title}")
     
     # Save updated history
     if new_items_found:

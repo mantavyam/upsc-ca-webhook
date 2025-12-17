@@ -168,12 +168,26 @@ def send_news_of_the_day_notification(date_title, articles, date_url):
     if not DISCORD_WEBHOOK or not articles:
         return False
     
-    # Build the markdown-formatted message
-    content = f"# News of the Day\n## {date_title}\n"
+    # Extract date from title and format as DD-MM-YYYY
+    try:
+        # Try to parse date from title if it contains date information
+        # Expected format: "Daily Current Affairs DD Month YYYY"
+        date_str = date_title.replace("Daily Current Affairs", "").strip()
+        date_obj = datetime.strptime(date_str, "%d %B %Y")
+        formatted_date = date_obj.strftime("%d-%m-%Y")
+    except:
+        # Fallback to using current date
+        formatted_date = datetime.now().strftime("%d-%m-%Y")
     
-    for article in articles:
-        # Create clickable links in Discord markdown format
-        content += f"### [{article['title']}]({article['url']})\n"
+    # Build the markdown-formatted message
+    content = f"# News of the Day\n## {formatted_date}\n"
+    
+    for idx, article in enumerate(articles, 1):
+        # Create numbered clickable links in Discord markdown format
+        content += f"### {idx}. [{article['title']}]({article['url']})\n"
+    
+    # Add the "View full page" link
+    content += f"\n[View full page]({date_url})"
     
     payload = {
         "content": content

@@ -25,8 +25,6 @@ def send_discord_notification(title, link, category):
     color = 3447003 if category == "Daily Current Affairs" else 15158332
     
     embed = {
-        "username": "Drill Ustaad - IMA",
-        "avatar_url": "https://i.ibb.co/Q79mP6CC/ima-ustad.jpg",
         "embeds": [{
             "title": f"{title}",
             "description": (
@@ -170,33 +168,19 @@ def send_news_of_the_day_notification(date_title, articles, date_url):
     if not DISCORD_WEBHOOK or not articles:
         return False
     
-    # Build the description with all articles as a numbered list
-    description = f"**{len(articles)} articles published on {date_title}:**\n\n"
+    # Build the markdown-formatted message
+    content = f"# News of the Day\n## {date_title}\n"
     
-    for idx, article in enumerate(articles, 1):
+    for article in articles:
         # Create clickable links in Discord markdown format
-        description += f"{idx}. [{article['title']}]({article['url']})\n"
+        content += f"### [{article['title']}]({article['url']})\n"
     
-    # Add a footer link to the main date page
-    description += f"\n[View full page]({date_url})"
-    
-    embed = {
-        "username": "Drill Ustaad - IMA",
-        "avatar_url": "https://i.ibb.co/Q79mP6CC/ima-ustad.jpg",
-        "embeds": [{
-            "title": "News of the Day",
-            "description": description,
-            "url": date_url,
-            "color": 3447003,
-            "timestamp": datetime.utcnow().isoformat(),
-            "footer": {
-                "text": "Exam Oriented • Daily Updates to Prepare thyself for the Written and SSB of the upcoming UPSC CDS Exam"
-            }
-        }]
+    payload = {
+        "content": content
     }
     
     try:
-        response = requests.post(DISCORD_WEBHOOK, json=embed, timeout=10)
+        response = requests.post(DISCORD_WEBHOOK, json=payload, timeout=10)
         response.raise_for_status()
         print(f"✓ Sent News of the Day notification ({len(articles)} articles)")
         return True

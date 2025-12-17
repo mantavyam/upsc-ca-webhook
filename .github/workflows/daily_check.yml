@@ -2,9 +2,9 @@ name: Webpage Monitor
 
 on:
   schedule:
-    # Run every 2 hours from 6 AM to 10 PM IST (0:30 to 16:30 UTC)
+    # Run at 10 AM to 6 PM IST (UTC)
     # This covers the typical update window
-    - cron: '30 4,12 * * *'
+    - cron: '30 4,11 * * *'
   
   workflow_dispatch:  # Allow manual runs for testing
 
@@ -40,8 +40,8 @@ jobs:
       
       - name: Commit History Changes
         run: |
-          git config --local user.name "DrishtiBot[bot]"
-          git config --local user.email "drishtibot@users.noreply.github.com"
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
           
           # Only commit if there are changes
           if [ -n "$(git status --porcelain)" ]; then

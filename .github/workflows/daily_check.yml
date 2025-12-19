@@ -4,7 +4,7 @@ on:
   schedule:
     # Run at 10 AM to 6 PM IST (UTC)
     # This covers the typical update window
-    - cron: '30 4,11 * * *'
+    - cron: '00 3,13 * * *'
   
   workflow_dispatch:  # Allow manual runs for testing
 
